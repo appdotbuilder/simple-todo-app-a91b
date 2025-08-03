@@ -1,10 +1,23 @@
 
-import { type Task } from '../schema';
+import { db } from '../db';
+import { tasksTable } from '../db/schema';
+import { isNotNull, sql } from 'drizzle-orm';
 
 export const getCategories = async (): Promise<string[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all unique categories from existing tasks.
-    // It should return a list of distinct category names (excluding null values).
-    // This will be useful for category selection in the frontend.
-    return [];
+  try {
+    // Query for distinct categories that are not null
+    const result = await db.select({
+      category: tasksTable.category
+    })
+    .from(tasksTable)
+    .where(isNotNull(tasksTable.category))
+    .groupBy(tasksTable.category)
+    .execute();
+
+    // Extract category strings from the result
+    return result.map(row => row.category as string);
+  } catch (error) {
+    console.error('Failed to fetch categories:', error);
+    throw error;
+  }
 };
